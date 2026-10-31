@@ -5,10 +5,10 @@ How to work this roadmap (any agent): run `bloch task start R-xxx --agent <you>`
 
 ## Phase 1 — Baseline truth
 - [~] R-101 Build is green from a clean checkout
-  - verify: test -f README.md
+  - verify: bash -c "~/.local/bin/zig build"
   - evidence:
 - [ ] R-102 Existing tests pass at the baseline
-  - verify: test -f README.md
+  - verify: bash -c "~/.local/bin/zig test src/main.zig"
   - evidence:
 - [ ] R-103 Repo identity, baseline version, and this roadmap are recorded
   - verify: test -f .ai/roadmap.md
@@ -16,35 +16,35 @@ How to work this roadmap (any agent): run `bloch task start R-xxx --agent <you>`
 
 ## Phase 2 — Core complete
 - [~] R-201 Core loop is playable from start to finish
-  - verify: test -f README.md
+  - verify: node tools/playtest.mjs
   - evidence:
 - [ ] R-202 Save and load round-trips game state
-  - verify: test -f README.md
+  - verify: node tools/settings-check.mjs
   - evidence:
 - [ ] R-203 Settings and accessibility options persist across sessions
-  - verify: test -f README.md
+  - verify: node tools/settings-check.mjs
   - evidence:
 
 ## Phase 3 — Tests and gates
 - [ ] R-301 Validation tests cover the happy path end to end (half the test split)
-  - verify: test -f README.md
+  - verify: bash -c "~/.local/bin/zig test src/main.zig"
   - evidence:
 - [ ] R-302 Adversarial tests cover malformed, oversized, and hostile inputs (half the test split)
-  - verify: test -f README.md
+  - verify: bash -c "~/.local/bin/zig test src/main.zig"
   - evidence:
 - [ ] R-303 Structured playtest checklist is executed and its record filed
-  - verify: test -f README.md
+  - verify: bash -c "node tools/playtest.mjs && test -f docs/PLAYTEST-2026-10-30.md"
   - evidence:
 
 ## Phase 4 — Hardening
 - [ ] R-401 Performance budget holds on target hardware
-  - verify: test -f README.md
+  - verify: node tools/perf.mjs
   - evidence:
 - [ ] R-402 Platform builds produce runnable artefacts
-  - verify: test -f README.md
+  - verify: bash -c "node tools/assemble.mjs && test -s web/index.html"
   - evidence:
 - [ ] R-403 Safety-critical options (stop/safeword-equivalents, accessibility) are never gated behind progression
-  - verify: test -f README.md
+  - verify: node tools/settings-check.mjs
   - evidence:
 
 ## Phase 5 — Docs
@@ -60,10 +60,10 @@ How to work this roadmap (any agent): run `bloch task start R-xxx --agent <you>`
   - verify: grep -q '1.0.0' CHANGELOG.md
   - evidence:
 - [ ] R-602 Clean-environment install and run is verified
-  - verify: test -f README.md
+  - verify: bash -c "rm -rf zig-out && ~/.local/bin/zig build && node tools/assemble.mjs && node tools/playtest.mjs"
   - evidence:
 - [ ] R-603 Release artefacts are built from a clean checkout and checksummed
-  - verify: test -f README.md
+  - verify: sha256sum -c SHA256SUMS
   - evidence:
 
 
@@ -73,10 +73,10 @@ How to work this roadmap (any agent): run `bloch task start R-xxx --agent <you>`
 - [ ] R-902 Engine research pinned for Zig (libraries, versions, licences)
   - verify: test -f book/src/engine-research.md
 - [ ] R-903 Single-file index.html assembles and runs offline with all screens
-  - verify: test -f web/index.html
+  - verify: bash -c "node tools/assemble.mjs && grep -q CREAMERY web/index.html"
 - [ ] R-904 GJ-07 passed: 18+ flag, warnings listed, itch ToS screen (verified live at entry)
   - verify: test -f book/src/jam.md
 - [ ] R-905 Seahawk playtest pass recorded; breakage log filed
-  - verify: test -f docs/BREAKAGE-LOG.md
+  - verify: bash -c "node tools/playtest.mjs && test -f docs/PLAYTEST-2026-10-30.md"
 - [ ] R-906 Port-back note + Zig language verdict + §9 transfer filing
-  - verify: test -f book/src/port-back.md
+  - verify: bash -c "test -f book/src/port-back.md && test -f docs/PORT-BACK.md"
