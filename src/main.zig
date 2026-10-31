@@ -1121,11 +1121,15 @@ pub const Renderer = struct {
     }
 
     /// Steam and lamplight: ambient life, all positions pure functions
-    /// of elapsed time. Lamp glow breathes with the pump pulse.
+    /// of elapsed time. Lamp glow breathes with the pump pulse. Lamps
+    /// hang only on the non-play screens: in play they would sit inside
+    /// the HUD text block (found by D-221 frame inspection, B-2).
     fn render_steam(g: *const Game, w: *DrawWriter) void {
         const t = @as(f32, @floatFromInt(g.elapsed_ms + g.screen_ms)) / 1000.0;
         const pulse = if (g.screen == .play or g.screen == .pause) pump_pulse(g) else 0.0;
-        for ([_]i32{ 190, 770 }) |lx| {
+        if (g.screen == .play or g.screen == .pause) {
+            // steam only; skip the lamp loop
+        } else for ([_]i32{ 190, 770 }) |lx| {
             w.seg(lx, 0, lx, 74, 3, Palette.dim);
             w.circle(lx, 96, 26 + fi(pulse * 8.0), Palette.gold);
             w.circle(lx, 96, 15, Palette.paper);
@@ -1200,7 +1204,16 @@ pub const Renderer = struct {
             const a2 = @as(f32, @floatFromInt(k + 1)) / @as(f32, @floatFromInt(segs)) * 6.2832 - 1.5708;
             w.seg(270 + fi(@cos(a1) * 128.0), 400 + fi(@sin(a1) * 128.0), 270 + fi(@cos(a2) * 128.0), 400 + fi(@sin(a2) * 128.0), 4, ring_c);
         }
-        if (g.stroke_flash_ms > 0) w.circle(270, 400, 146, Palette.pink);
+        if (g.stroke_flash_ms > 0) {
+            // A ring, not a disc: a filled circle swallows the rig
+            // whole (found by D-221 frame inspection, B-2).
+            var fk: usize = 0;
+            while (fk < segs) : (fk += 1) {
+                const a1 = @as(f32, @floatFromInt(fk)) / @as(f32, @floatFromInt(segs)) * 6.2832;
+                const a2 = @as(f32, @floatFromInt(fk + 1)) / @as(f32, @floatFromInt(segs)) * 6.2832;
+                w.seg(270 + fi(@cos(a1) * 148.0), 400 + fi(@sin(a1) * 148.0), 270 + fi(@cos(a2) * 148.0), 400 + fi(@sin(a2) * 148.0), 5, Palette.pink);
+            }
+        }
         // Tubing from the rig toward her (a soft arc of dots that travel
         // with the strokes — secondary motion locked to the same clock)
         var d: usize = 0;
@@ -1307,7 +1320,9 @@ pub const Renderer = struct {
             .release => "LETTING DOWN",
             .rest => "RESTING",
         };
-        w.text(360, 852, text_size(g, 26), if (ph == .peak) Palette.pink else Palette.paper, label);
+        // Left column, under the rig: centred, this text would run
+        // across her white apron and vanish (D-221 frame check, B-2).
+        w.text(110, 856, text_size(g, 26), if (ph == .peak) Palette.pink else Palette.paper, label);
         const n = lvl.strokes_per_cycle;
         for (0..n) |k| {
             const x: i32 = 384 + @as(i32, @intCast(k)) * 44;
