@@ -2,7 +2,7 @@
 .{
     .name = .creamery,
     .version = "0.1.0",
-    .fingerprint = 0x0000000000000000, // preflight: replace on first `zig build`
+    .fingerprint = 0xf5a8dde1adbc498,
     .minimum_zig_version = "0.15.1",
     .paths = .{ "build.zig", "build.zig.zon", "src" },
 }
