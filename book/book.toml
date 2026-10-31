@@ -1,0 +1,12 @@
+[book]
+title = "Creamery — Planning Book"
+authors = ["Nice Thoughts Ranch"]
+language = "en"
+src = "src"
+
+[build]
+build-dir = "html"
+
+[output.html]
+additional-css = ["theme/ntranch.css"]
+default-theme = "ntranch"

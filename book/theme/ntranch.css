@@ -1,0 +1,18 @@
+/* NTRanch theme — dark backgrounds, hot pink. Nice Thoughts Ranch. */
+:root { --ntr-bg: #0d0208; --ntr-panel: #180410; --ntr-pink: #ff2e88; --ntr-pink-soft: #ff5da2; --ntr-text: #f7e8f1; }
+html { background-color: var(--ntr-bg); }
+body { background-color: var(--ntr-bg); color: var(--ntr-text); }
+.content, main { background-color: var(--ntr-bg); color: var(--ntr-text); }
+h1, h2, h3, h4, h5, h6 { color: var(--ntr-pink); }
+a, .content a { color: var(--ntr-pink-soft); }
+a:hover { color: #ffffff; }
+code { background-color: var(--ntr-panel); color: #ffd7ea; }
+pre { background-color: var(--ntr-panel); }
+blockquote { border-left-color: var(--ntr-pink); color: var(--ntr-text); }
+table thead { background-color: var(--ntr-panel); color: var(--ntr-pink); }
+table td, table th { border-color: #4a1030; }
+.sidebar { background-color: #12030c; }
+.sidebar a { color: #e8bfd4; }
+.sidebar a.active { color: var(--ntr-pink); }
+.menu-bar, .nav-wrapper { background-color: #12030c; color: var(--ntr-text); }
+hr { border-color: #4a1030; }
