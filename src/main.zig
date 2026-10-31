@@ -1001,15 +1001,15 @@ pub const Renderer = struct {
     fn render_gate(g: *const Game, w: *DrawWriter) void {
         w.text(330, 300, text_size(g, 64), Palette.pink, "CREAMERY");
         w.text(250, 420, text_size(g, 30), Palette.paper, "ALMA AND THE MORNING PUMP");
-        w.text(240, 540, text_size(g, 28), Palette.rose, "THIS GAME IS FOR ADULTS ONLY (18+)");
-        w.text(230, 600, text_size(g, 24), Palette.dim, "CONTAINS ADULT ROLEPLAY AND LACTATION THEMES");
+        w.text(276, 540, text_size(g, 20), Palette.rose, "THIS GAME IS FOR ADULTS ONLY (18+)");
+        w.text(216, 600, text_size(g, 20), Palette.dim, "CONTAINS ADULT ROLEPLAY AND LACTATION THEMES");
         if ((g.frame / 30) % 2 == 0) w.text(330, 720, text_size(g, 28), Palette.paper, "PRESS CONFIRM TO ENTER");
     }
 
     fn render_title(g: *const Game, w: *DrawWriter) void {
         render_steam(g, w);
         w.text(320, 130, text_size(g, 72), Palette.pink, "CREAMERY");
-        w.text(290, 220, text_size(g, 24), Palette.dim, "ALMA - THE TRACK IS THE SCORE");
+        w.text(306, 220, text_size(g, 20), Palette.dim, "ALMA - THE TRACK IS THE SCORE");
         const items = [_][]const u8{ "START", "HOW TO PLAY", "SETTINGS" };
         for (items, 0..) |label, i| {
             const y: i32 = 360 + @as(i32, @intCast(i)) * 74;
@@ -1021,10 +1021,10 @@ pub const Renderer = struct {
         var buf: [64]u8 = undefined;
         const ls = std.fmt.bufPrint(&buf, "LEVEL: {s}", .{levels[g.level_idx].name}) catch "LEVEL";
         if (g.menu_cursor == 3) w.text(240, 600, text_size(g, 26), Palette.pink, ">");
-        w.text(290, 600, text_size(g, 26), if (g.menu_cursor == 3) Palette.pink else Palette.gold, ls);
+        w.text(290, 600, text_size(g, 20), if (g.menu_cursor == 3) Palette.pink else Palette.gold, ls);
         const ps = std.fmt.bufPrint(&buf, "PUMP PRESET: {s}", .{g.preset.label()}) catch "PRESET";
         if (g.menu_cursor == 4) w.text(240, 660, text_size(g, 26), Palette.pink, ">");
-        w.text(290, 660, text_size(g, 26), if (g.menu_cursor == 4) Palette.pink else Palette.gold, ps);
+        w.text(290, 660, text_size(g, 20), if (g.menu_cursor == 4) Palette.pink else Palette.gold, ps);
         w.text(260, 730, text_size(g, 20), Palette.dim, "UP/DOWN CHOOSES - CONFIRM STARTS OR CYCLES");
         w.text(300, 800, text_size(g, 20), Palette.dim, "COMFORT IS NEVER LOCKED: CHANGE IT ANY TIME");
     }
@@ -1048,7 +1048,7 @@ pub const Renderer = struct {
             "FOR THE NEXT CYCLE - NEVER MID-CYCLE.",
         };
         for (lines, 0..) |ln, i| {
-            w.text(150, 220 + @as(i32, @intCast(i)) * 44, text_size(g, 24), Palette.paper, ln);
+            w.text(150, 220 + @as(i32, @intCast(i)) * 44, text_size(g, 20), Palette.paper, ln);
         }
         if ((g.frame / 30) % 2 == 0) w.text(300, 880, text_size(g, 24), Palette.dim, "CONFIRM TO RETURN");
     }
@@ -1068,8 +1068,8 @@ pub const Renderer = struct {
             if (i == g.menu_cursor) w.text(150, y, text_size(g, 30), Palette.pink, ">");
             w.text(200, y, text_size(g, 30), c, row);
         }
-        w.text(240, 700, text_size(g, 22), Palette.dim, "CONFIRM CYCLES OR TOGGLES - BACK RETURNS");
-        w.text(210, 750, text_size(g, 22), Palette.dim, "THESE SETTINGS ARE NEVER GATED BY PROGRESS");
+        w.text(240, 700, text_size(g, 20), Palette.dim, "CONFIRM CYCLES OR TOGGLES - BACK RETURNS");
+        w.text(210, 750, text_size(g, 20), Palette.dim, "THESE SETTINGS ARE NEVER GATED BY PROGRESS");
     }
 
     fn render_pause(g: *const Game, w: *DrawWriter) void {
@@ -1089,10 +1089,10 @@ pub const Renderer = struct {
     fn render_end(g: *const Game, w: *DrawWriter, won: bool) void {
         render_steam(g, w);
         if (won) {
-            w.text(280, 90, text_size(g, 52), Palette.pink, "THE BOOK IS FULL");
-            w.text(300, 170, text_size(g, 28), Palette.paper, "TARGET REACHED - SHE IS CONTENT");
+            w.text(192, 90, text_size(g, 40), Palette.pink, "THE BOOK IS FULL");
+            w.text(294, 170, text_size(g, 20), Palette.paper, "TARGET REACHED - SHE IS CONTENT");
         } else {
-            w.text(230, 90, text_size(g, 52), Palette.mauve, "THE MORNING ENDS SHORT");
+            w.text(84, 90, text_size(g, 40), Palette.mauve, "THE MORNING ENDS SHORT");
             w.text(360, 170, text_size(g, 28), Palette.paper, "TIME RAN OUT");
         }
         w.text(330, 250, text_size(g, 30), Palette.gold, "THE BOOK OF RECORD");
@@ -1310,7 +1310,7 @@ pub const Renderer = struct {
         // Time left
         const remain = lvl.time_limit_ms -| g.elapsed_ms;
         const ts = std.fmt.bufPrint(&buf, "TIME {d}:{d:0>2}", .{ remain / 60000, (remain / 1000) % 60 }) catch "";
-        w.text(790, 36, text_size(g, 22), Palette.dim, ts);
+        w.text(730, 36, text_size(g, 22), Palette.dim, ts);
         // Phase label + stroke pips
         const ph = g.phase();
         const label: []const u8 = switch (ph) {

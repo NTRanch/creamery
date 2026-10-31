@@ -52,3 +52,17 @@ bloch at the week's close (the log is the input, bloch is the record).
   R-203 are gated on the settings bridge (`tools/settings-check.mjs`),
   and the scoping is recorded here rather than silently narrowing the
   items.
+- **B-7: Raster-advance audit (D-338) failed at Pax's arrival gate,
+  after v1.0 was tagged.** The preview rasteriser's per-character
+  advance is 12 × max(1, round(size/14)) logical px — it doubles at
+  size ≥ 21 — so twelve lines that fit the browser canvas clipped in
+  raster renders: both 18+ gate lines, the title's level line, nine
+  how-to lines, both settings footers, both end titles and their
+  subtitle, and the HUD clock ("TIME 5:00" ended at x=1006). The
+  builder's D-221 pass inspected level frames only; D-338 audits
+  every screen. Fix (Pax, at the gate): long lines re-set at size 20
+  and re-centred, end titles at 40 sized to width, HUD clock moved
+  to x=730. All gates re-run green — 17/17 tests, fmt clean,
+  playtest step counts identical (1395/1960/3078) — previews
+  re-captured from the fixed build, checksums regenerated, tag
+  v1.0.0 moved to the fix commit before any push.
