@@ -4,7 +4,7 @@
 How to work this roadmap (any agent): run `bloch task start R-xxx --agent <you>` before working a task, `bloch task done R-xxx` when you believe it is complete — done runs every `verify:` command and flips the task green only if all pass; there is no override. `bloch task fail R-xxx --error "..."` records a failure. Fixes learned the hard way land in `.ai/memory/lessons.md` via the inbox/promote flow and are surfaced in every HANDOFF.
 
 ## Phase 1 — Baseline truth
-- [ ] R-101 Build is green from a clean checkout
+- [~] R-101 Build is green from a clean checkout
   - verify: test -f README.md
   - evidence:
 - [ ] R-102 Existing tests pass at the baseline
@@ -15,7 +15,7 @@ How to work this roadmap (any agent): run `bloch task start R-xxx --agent <you>`
   - evidence:
 
 ## Phase 2 — Core complete
-- [ ] R-201 Core loop is playable from start to finish
+- [~] R-201 Core loop is playable from start to finish
   - verify: test -f README.md
   - evidence:
 - [ ] R-202 Save and load round-trips game state
