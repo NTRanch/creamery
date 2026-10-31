@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creamery — Alma and the morning pump (18+)</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #0d0208; color: #eaeaea;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  main { min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px; padding: 16px;
+    box-sizing: border-box; }
+  canvas { width: min(92vmin, 720px); height: min(92vmin, 720px);
+    background: #0d0208; border: 1px solid #540e46; touch-action: manipulation; }
+  p { margin: 0; font-size: 13px; color: #ac9393; text-align: center;
+    max-width: 720px; line-height: 1.5; }
+  .pink { color: #ff2e88; }
+</style>
+</head>
+<body>
+<main>
+  <canvas id="game" width="960" height="960"></canvas>
+  <p><span class="pink">CREAMERY</span> — 18+ only. Adult roleplay and lactation themes.
+  Tap / click or SPACE on the pump's stroke beats and on the peak. Arrows choose
+  (and queue a new preset in play), ENTER confirms, P pauses. Sound is generated
+  live and only ever answers your own input.</p>
+  <p id="records"></p>
+</main>
+<script type="module">
+/*__GAME_MJS__*/
+
+const WASM_B64 = "/*__WASM_B64__*/";
+const wasmBytes = Uint8Array.from(atob(WASM_B64), (c) => c.charCodeAt(0));
+
+const params = new URLSearchParams(location.search);
+const demoLevel = params.has("demo") ? Number(params.get("demo")) : null;
+const seed = params.has("seed") ? Number(params.get("seed")) : 20261;
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const game = await createGame(wasmBytes, {
+  seed,
+  level: demoLevel ?? 0,
+  demo: demoLevel !== null,
+});
+if (demoLevel !== null) game.startLevel(demoLevel);
+
+// --- persistence: settings + per-level best yield live in localStorage;
+// the core restores settings through its bridge at boot, and the shell
+// records best yields when a run ends. A run itself is one sitting; the
+// book of record for the sitting lives in the core. ---
+const LS_KEY = "creamery-save-v1";
+let save = { preset: 1, flashReduced: false, textLarge: false, best: [0, 0, 0], done: [false, false, false] };
+try { save = { ...save, ...JSON.parse(localStorage.getItem(LS_KEY) ?? "{}") }; } catch { /* fresh save */ }
+game.applySettings(save.preset, save.flashReduced, save.textLarge);
+let lastSettingsBits = game.settingsBits();
+let lastScreen = game.screen();
+let currentLevel = demoLevel ?? 0;
+function persist() { try { localStorage.setItem(LS_KEY, JSON.stringify(save)); } catch { /* private mode */ } }
+function noteScreen() {
+  const s = game.screen();
+  const bits = game.settingsBits();
+  if (bits !== lastSettingsBits) {
+    lastSettingsBits = bits;
+    save.preset = bits & 3;
+    save.flashReduced = (bits & 4) !== 0;
+    save.textLarge = (bits & 8) !== 0;
+    persist();
+  }
+  if (s !== lastScreen) {
+    if (s === 3) currentLevel = game.levelIdx();
+    if (s === 6 || s === 7) {
+      const y = game.yieldMl();
+      if (y > (save.best[currentLevel] ?? 0)) save.best[currentLevel] = y;
+      if (s === 6) save.done[currentLevel] = true;
+      persist();
+      renderRecords();
+    }
+    lastScreen = s;
+  }
+}
+function renderRecords() {
+  const el = document.getElementById("records");
+  if (!el) return;
+  const parts = save.best.map((b, i) => `L${i + 1} ${save.done[i] ? "BOOKED " + b + " ML" : b > 0 ? b + " ML" : "—"}`);
+  el.textContent = `Your book so far: ${parts.join(" · ")}`;
+}
+renderRecords();
+
+// --- input: pointer presses are taps AND confirms (each screen reads the
+// bits it cares about); keys map to the same bitset. ---
+let pendingInput = 0;
+function press(bits) { pendingInput |= bits; ensureAudio(); }
+canvas.addEventListener("pointerdown", () => press(INPUT.tap | INPUT.confirm));
+addEventListener("keydown", (e) => {
+  if (e.repeat) return;
+  if (e.code === "Space") { press(INPUT.tap | INPUT.confirm); e.preventDefault(); }
+  else if (e.code === "Enter") press(INPUT.confirm);
+  else if (e.code === "ArrowUp") press(INPUT.up);
+  else if (e.code === "ArrowDown") press(INPUT.down);
+  else if (e.code === "KeyP" || e.code === "Escape") press(INPUT.pause);
+  else if (e.code === "Backspace") press(INPUT.back);
+});
+
+// --- audio: generated WebAudio, created only after a user gesture, and
+// only ever in response to core events that input caused. The cue set is
+// the pump's own voice: chuff on a stroke, a bright lift on the peak, a
+// pouring fall on the let-down. ---
+let audio = null;
+function ensureAudio() {
+  if (audio) { if (audio.state === "suspended") audio.resume(); return; }
+  try {
+    audio = new (window.AudioContext || window.webkitAudioContext)();
+  } catch { audio = null; }
+}
+function tone(freq, dur, type = "sine", gain = 0.12, when = 0) {
+  if (!audio) return;
+  const t0 = audio.currentTime + when;
+  const osc = audio.createOscillator();
+  const g = audio.createGain();
+  osc.type = type; osc.frequency.value = freq;
+  g.gain.setValueAtTime(gain, t0);
+  g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+  osc.connect(g).connect(audio.destination);
+  osc.start(t0); osc.stop(t0 + dur);
+}
+function sonify(eventCode) {
+  switch (eventCode) {
+    case 1: tone(392, 0.09, "triangle", 0.14); break; // stroke lands
+    case 2: tone(140, 0.14, "sawtooth", 0.05); break; // stroke missed
+    case 3: tone(660, 0.14); tone(523, 0.16, "sine", 0.11, 0.1); tone(392, 0.3, "sine", 0.11, 0.22); break; // let-down pour
+    case 4: tone(330, 0.2, "triangle", 0.09); break; // partial cycle
+    case 5: tone(523, 0.35); tone(659, 0.35, "sine", 0.1, 0.05); tone(784, 0.45, "sine", 0.1, 0.1); break; // book full
+    case 6: tone(220, 0.3, "triangle", 0.1); tone(147, 0.45, "triangle", 0.1, 0.2); break; // morning ends
+    case 7: tone(440, 0.04, "sine", 0.06); break; // ui move
+    case 8: tone(880, 0.1, "sine", 0.12); tone(1318, 0.16, "sine", 0.08, 0.06); break; // the peak lands
+  }
+}
+
+// --- painting: the core's draw list, interpreted on canvas. ---
+function paint(frame) {
+  for (const op of frame.ops) {
+    const kind = op[0];
+    const ci = kind === "t" ? op[4] : op[op.length - 1];
+    ctx.fillStyle = frame.palette[ci] ?? "#ff2e88";
+    ctx.strokeStyle = ctx.fillStyle;
+    if (kind === "r") ctx.fillRect(op[1], op[2], op[3], op[4]);
+    else if (kind === "c") { ctx.beginPath(); ctx.arc(op[1], op[2], op[3], 0, 6.2832); ctx.fill(); }
+    else if (kind === "l") {
+      ctx.lineWidth = op[5]; ctx.beginPath(); ctx.moveTo(op[1], op[2]); ctx.lineTo(op[3], op[4]); ctx.stroke();
+    } else if (kind === "p") {
+      ctx.beginPath(); ctx.moveTo(op[1], op[2]); ctx.lineTo(op[3], op[4]); ctx.lineTo(op[5], op[6]);
+      ctx.closePath(); ctx.fill();
+    } else if (kind === "t") {
+      ctx.font = `${op[3]}px ui-monospace, Menlo, monospace`;
+      ctx.textBaseline = "top";
+      ctx.fillText(op[5], op[1], op[2]);
+    }
+  }
+}
+
+// --- fixed-step loop: 16 ms steps, paint the newest frame. ---
+let acc = 0;
+let last = performance.now();
+function loop(now) {
+  acc += Math.min(now - last, 250);
+  last = now;
+  let stepped = false;
+  while (acc >= 16) {
+    const bits = pendingInput;
+    pendingInput = 0;
+    game.step(bits);
+    const ev = game.event();
+    if (ev !== 0) sonify(ev);
+    acc -= 16;
+    stepped = true;
+  }
+  if (stepped) { noteScreen(); paint(game.frame()); }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
