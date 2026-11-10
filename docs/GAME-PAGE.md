@@ -14,7 +14,7 @@ All characters depicted are adults.
 
 ## A rhythm game where you tap on each pump stroke and its peak to reach a target yield before the morning's time runs out.
 
-<p align="center"><a href="https://github.com/NTRanch/creamery">GitHub</a> · <a href="https://github.com/NTRanch/creamery/blob/main/LICENSE.md">License</a> · <a href="https://ntranch.itch.io">itch.io studio page</a></p>
+<p align="center"><a href="https://github.com/NTRanch/creamery">GitHub</a> · <a href="https://github.com/NTRanch/creamery/blob/main/LICENSE.md">License</a> · <a href="https://ntranch.itch.io">itch.io studio page</a> · <a href="https://github.com/NTRanch/creamery/releases/tag/v1.0.0">Release</a></p>
 
 ![Creamery header](../assets/brand/header.png)
 
